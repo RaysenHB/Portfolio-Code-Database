@@ -1,0 +1,496 @@
+  -- b. Create
+CREATE DATABASE BEJIBUN
+GO
+USE BEJIBUN
+GO
+CREATE TABLE Customer (
+    CustomerID CHAR(5) PRIMARY KEY CHECK (CustomerID LIKE 'CU[0-9][0-9][0-9]'),
+    CustomerName VARCHAR(255) NOT NULL,
+    CustomerGender VARCHAR(6) NOT NULL CHECK (CustomerGender IN ('Female','Male')),
+    CustomerPhone VARCHAR(15) NOT NULL,
+    CustomerDOB DATE NOT NULL CHECK (YEAR(CustomerDOB)>1989 AND YEAR(CustomerDOB)<YEAR(GETDATE())),
+)
+GO
+CREATE TABLE Staff (
+    StaffID CHAR(5) PRIMARY KEY CHECK (StaffID LIKE 'ST[0-9][0-9][0-9]'),
+    StaffName VARCHAR(255) NOT NULL,
+    StaffGender VARCHAR(6) NOT NULL CHECK (StaffGender IN ('Female','Male')),
+    StaffPhone VARCHAR(15) NOT NULL,
+    Salary INT NOT NULL CHECK (Salary > 0)
+)
+GO
+CREATE TABLE Vendor (
+    VendorID CHAR(5) PRIMARY KEY CHECK(VendorID LIKE 'VE[0-9][0-9][0-9]'),
+    VendorName VARCHAR(255) NOT NULL,
+    VendorPhone VARCHAR(15) NOT NULL,
+    VendorAddress VARCHAR(255) NOT NULL CHECK (VendorAddress like '% Street'),
+    VendorEmail VARCHAR(255) NOT NULL CHECK (VendorEmail like '%@%.com')
+)
+GO
+CREATE TABLE ItemType (
+    ItemTypeID CHAR(5) PRIMARY KEY CHECK(ItemTypeID LIKE 'IP[0-9][0-9][0-9]'),
+    ItemTypeName VARCHAR(255) NOT NULL CHECK(LEN(ItemTypeName)>=4)
+)
+GO
+CREATE TABLE Item (
+    ItemID CHAR(5) PRIMARY KEY CHECK(ItemID LIKE 'IT[0-9][0-9][0-9]'),
+    ItemTypeID CHAR(5) FOREIGN KEY REFERENCES ItemType(ItemTypeID) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    ItemName VARCHAR(255) NOT NULL,
+    ItemPrice INT NOT NULL CHECK(ItemPrice>0),
+    MinimumPurchase INT NOT NULL
+)
+GO
+CREATE TABLE SellTransactionHeader(
+    SellTransactionID CHAR(5) PRIMARY KEY CHECK(SellTransactionID LIKE 'SA[0-9][0-9][0-9]'),
+    CustomerID CHAR(5) FOREIGN KEY REFERENCES Customer(CustomerID) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    StaffID CHAR(5) FOREIGN KEY REFERENCES Staff(StaffID) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    SellTransactionDate DATE NOT NULL
+)
+GO
+CREATE TABLE SellTransactionDetail(
+    SellTransactionID CHAR(5) FOREIGN KEY REFERENCES SellTransactionHeader(SellTransactionID) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    ItemID CHAR(5) FOREIGN KEY REFERENCES Item(ItemID) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    Quantity INT NOT NULL,
+    PRIMARY KEY (SellTransactionID,ItemID)
+)
+GO
+CREATE TABLE BuyTransactionHeader(
+    BuyTransactionID CHAR(5) PRIMARY KEY CHECK(BuyTransactionID LIKE 'PH[0-9][0-9][0-9]'),
+    StaffID CHAR(5) FOREIGN KEY REFERENCES Staff(StaffID) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    VendorID CHAR(5) FOREIGN KEY REFERENCES Vendor(VendorID) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    PurchaseDate DATE NOT NULL,
+    ArrivedDate DATE
+)
+GO
+CREATE TABLE BuyTransactionDetail(
+    BuyTransactionID CHAR(5) FOREIGN KEY REFERENCES BuyTransactionHeader(BuyTransactionID) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    ItemID CHAR(5) FOREIGN KEY REFERENCES Item(ItemID) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    Quantity INT NOT NULL,
+    PRIMARY KEY (BuyTransactionID,ItemID)
+)
+
+        -- c. Insert
+GO
+INSERT INTO Customer VALUES
+('CU001','Andi Gunawan','Male','0895117589231','1996-01-04'),
+('CU002','Budi Burhan','Male','0872857483211','1996-05-23'),
+('CU003','Caca Wijaya','Female','0874654387651','1995-03-12'),
+('CU004','Dave Purnama','Male','0887438762841','1997-09-08'),
+('CU005','Eva Putri','Female','0898886841132','1999-03-26'),
+('CU006','Ryu Chandra','Male','0872857483211','1998-05-23'),
+('CU007','Alex Setiawan','Male','0888638654232','1994-12-21'),
+('CU008','Lili Chai','Female','0818554637252','2000-07-14'),
+('CU009','Jenny Monabon','Female','0889132455672','2001-08-19'),
+('CU010','Katy Peri','Female','0816335435653','1993-04-06'),
+('CU011','Jason Sulaiman','Male','0845447638292','1995-02-05'),
+('CU012','Jojo Tirta','Male','0823366758457','1992-07-25'),
+('CU013','Natasya Grande','Female','0877956111232','1997-09-08'),
+('CU014','Lia Hiu','Female','0895686463531','1991-11-12'),
+('CU015','Aldo Winata','Male','0855746863525','1998-05-23');
+GO
+INSERT INTO Staff VALUES
+('ST001','Valentina','Female','0818460816823','4600000'),
+('ST002','Bruno','Male','0854557847391','3000000'),
+('ST003','Justin','Male','0825775837261','5500000'),
+('ST004','Grace','Female','0858515957513','3900000'),
+('ST005','Marissa','Female','0876757974531','6000000'),
+('ST006','Randi','Male','0841464145418','5200000'),
+('ST007','Ilene','Female','0871787473781','4200000'),
+('ST008','Owen','Male','0847167625241','6700000'),
+('ST009','Helen','Female','0818383637316','6400000'),
+('ST010','Jolie','Female','0837353993912','7200000'),
+('ST011','Tiffany','Female','0674515851532','4400000'),
+('ST012','William','Male','0698919365641','5800000'),
+('ST013','Vincent','Male','0836315753421','6250000'),
+('ST014','Faradina','Female','0847868574651','7150000'),
+('ST015','Evanny','Female','0858576451681','5350000');
+GO
+INSERT INTO Vendor VALUES
+('VE001','McDonald','0891939593761','Sembawang Street','mcdstore@gmail.com'),
+('VE002','Chatime','0895272625241','Food Street','chatimestore@gmail.com'),
+('VE003','KFC','0896717478713','Thomson Street','kfcstore@yahoo.com'),
+('VE004','Starbucks','0895414647441','Food Street','sbux@yahoo.com'),
+('VE005','Apple','0893818982831','East Street','applestore@gmail.com'),
+('VE006','Asus','0895171516351','Flower Street','asusstore@gmail.com'),
+('VE007','Xiaomi','0895373933367','West Street','xiaomistore@gmail.com'),
+('VE008','Yoshinoya','0839561176356','Elista Street','yoshinoyastore@yahoo.com'),
+('VE009','Gulu Gulu','0895797761625','North Street','gulugulustore@yahoo.com'),
+('VE010','Shilin','0895595573612','Samara Street','shilinstore@gmail.com'),
+('VE011','Lenovo','0895343361678','Flamingo Street','lenovostore@gmail.com'),
+('VE012','Dell','0895323346447','Pelican Street','dellstore@yahoo.com'),
+('VE013','Samsung','0894484175773','Dalton Street','samsungstore@gmail.com'),
+('VE014','Tiger Sugar','0895565448761','Ruby Street','tigersugarstore@gmail.com'),
+('VE015','Gong Cha','0892212345241','South Street','gongchastore@yahoo.com');
+GO
+INSERT INTO ItemType VALUES
+('IP001','Food'),
+('IP002','Drink'),
+('IP003','Electronic'),
+('IP004','Gadgets');
+GO
+INSERT INTO Item VALUES
+('IT001','IP002','Hazelnut Milk Tea','28000','4'),
+('IT002','IP001','Chicken Burger','45000','8'),
+('IT003','IP004','Samsung Galaxy M22','2800000','2'),
+('IT004','IP001','Black Pepper Beef Bowl','50000','4'),
+('IT005','IP003','Asus TUF Gaming FX705','9200000','1'),
+('IT006','IP002','Oolong Milk Tea','27000','7'),
+('IT007','IP003','Lenovo IdeaPad Gaming','95000000','2'),
+('IT008','IP004','Xiaomi Mi 11 Ultra','16999000','1'),
+('IT009','IP001','Fish Fillet Burger','22000','5'),
+('IT010','IP004','Samsung Galaxy Z Flip','14999000','3'),
+('IT011','IP002','Brown Sugar Milk Tea','26000','6'),
+('IT012','IP001','Yakiniku Beef','48000','3'),
+('IT013','IP003','Apple Macbook Pro 12-inch','18300000','1'),
+('IT014','IP001','McSpicy','43000','2'),
+('IT015','IP002','Cheese Black Tea','31000','7');
+GO
+INSERT INTO SellTransactionHeader VALUES
+('SA001','CU013','ST009','2019-01-19'),
+('SA002','CU005','ST004','2020-12-07'),
+('SA003','CU015','ST004','2021-01-01'),
+('SA004','CU003','ST012','2021-11-28'),
+('SA005','CU001','ST010','2021-10-19'),
+('SA006','CU007','ST001','2021-07-16'),
+('SA007','CU011','ST009','2019-12-14'),
+('SA008','CU014','ST015','2019-06-18'),
+('SA009','CU004','ST015','2019-04-12'),
+('SA010','CU009','ST011','2021-01-22'),
+('SA011','CU011','ST007','2021-12-16'),
+('SA012','CU002','ST002','2021-08-11'),
+('SA013','CU008','ST005','2021-10-29'),
+('SA014','CU012','ST013','2020-03-15'),
+('SA015','CU006','ST003','2020-06-20');
+GO
+INSERT INTO SellTransactionDetail VALUES
+('SA001','IT007',87),
+('SA001','IT010',71),
+('SA001','IT011',46),
+('SA002','IT007',78),
+('SA002','IT001',12),
+('SA003','IT015',56),
+('SA003','IT004',79),
+('SA003','IT002',96),
+('SA004','IT007',26),
+('SA004','IT013',61),
+('SA005','IT015',93),
+('SA005','IT011',85),
+('SA006','IT004',124),
+('SA006','IT001',114),
+('SA007','IT010',127),
+('SA007','IT007',20),
+('SA007','IT005',92),
+('SA008','IT010',98),
+('SA008','IT014',75),
+('SA009','IT012',55),
+('SA009','IT014',195),
+('SA010','IT009',165),
+('SA010','IT004',140),
+('SA010','IT010',130),
+('SA011','IT011',110),
+('SA011','IT002',80),
+('SA012','IT008',75),
+('SA012','IT001',185),
+('SA013','IT014',165),
+('SA013','IT012',210),
+('SA014','IT005',145),
+('SA014','IT009',50),
+('SA015','IT003',125),
+('SA015','IT012',100),
+('SA015','IT009',200);
+GO
+INSERT INTO BuyTransactionHeader VALUES
+('PH001','ST012','VE009','2019-05-17','2019-05-18'),
+('PH002','ST002','VE005','2019-04-01','2019-04-08'),
+('PH003','ST015','VE007','2019-02-15','2019-02-22'),
+('PH004','ST010','VE011','2019-01-11','2019-01-17'),
+('PH005','ST014','VE006','2019-11-09', NULL),
+('PH006','ST012','VE003','2019-12-05','2019-12-06'),
+('PH007','ST005','VE001','2019-06-24','2019-06-25'),
+('PH008','ST004','VE009','2019-04-14','2019-04-15'),
+('PH009','ST007','VE003','2019-05-03', '2019-05-04'),
+('PH010','ST006','VE013','2019-06-11', NULL),
+('PH011','ST012','VE010','2019-09-02','2019-09-03'),
+('PH012','ST001','VE014','2019-10-19','2019-10-20'),
+('PH013','ST013','VE012','2019-03-05', NULL),
+('PH014','ST003','VE008','2019-04-15','2019-04-16'),
+('PH015','ST007','VE002','2019-07-06','2019-07-07');
+GO
+INSERT INTO BuyTransactionDetail VALUES
+('PH001','IT005',150),
+('PH001','IT002',138),
+('PH002','IT004',125),
+('PH002','IT010',150),
+('PH002','IT012',128),
+('PH003','IT001',125),
+('PH003','IT004',134),
+('PH004','IT012',139),
+('PH004','IT008',131),
+('PH005','IT009',130),
+('PH005','IT003',129),
+('PH006','IT007',127),
+('PH006','IT012',126),
+('PH007','IT014',119),
+('PH007','IT004',45),
+('PH007','IT006',42),
+('PH008','IT011',49),
+('PH008','IT013',83),
+('PH009','IT010',94),
+('PH009','IT002',87),
+('PH010','IT009',75),
+('PH010','IT003',85),
+('PH011','IT015',98),
+('PH012','IT007',95),
+('PH013','IT012',97),
+('PH013','IT008',93),
+('PH014','IT002',24),
+('PH014','IT001',66),
+('PH015','IT005',75),
+('PH015','IT009',98),
+('PH015','IT002',134),
+('PH015','IT011',132),
+('PH015','IT015',131),
+('PH015','IT003',110),
+('PH015','IT008',118);
+
+        -- d. Transaction
+
+-- 1. Pada tanggal 28 Juni 2019 Lia Hiu membeli 5 Xiaomi Mi 11 Ultra,
+--    24 McSpicy dilayani oleh Valentina
+GO
+INSERT INTO SellTransactionHeader VALUES
+('SA016','CU014','ST001','2019-06-28');
+INSERT INTO SellTransactionDetail VALUES
+('SA016','IT008',5), -- 5 Xiaomi Mi 11 Ultra
+('SA016','IT014',24); -- 24 McSpicy
+
+-- 2. Pada tanggal 30 Maret 2019 Ryu Chandra membeli 55 Chicken Burger,
+--    150 Hazelnut Milk Tea, 35 Cheese Black Tea dilayani oleh Faradina
+GO
+INSERT INTO SellTransactionHeader VALUES
+('SA017','CU006','ST014','2019-03-30');
+INSERT INTO SellTransactionDetail VALUES
+('SA017','IT002',55), -- 55 Chicken Burger
+('SA017','IT001',150), -- 150 Hazelnut Milk Tea
+('SA017','IT015',35); -- 35 Cheese Black Tea
+
+-- 3. Pada tanggal 14 Juni 2019 Aldo Winata membeli 125 Yakiniku Beef,
+--    150 Brown Sugar Milk Tea, 88 Black Pepper Beef Bowl dilayani oleh Randi
+GO
+INSERT INTO SellTransactionHeader VALUES
+('SA018','CU015','ST006','2019-06-14');
+INSERT INTO SellTransactionDetail VALUES
+('SA018','IT012',125), -- 125 Yakiniku Beef
+('SA018','IT011',150), -- 150 Brown Sugar Milk Tea
+('SA018','IT004',88); -- 88 Black Pepper Beef Bowl
+
+-- 4. Pada tanggal 25 November 2019 Caca Wijaya membeli 15 Samsung Galaxy M22,
+--    35 Apple Macbook Pro 12-inch, 2 Samsung Galaxy Z Flip dilayani oleh Owen
+GO
+INSERT INTO SellTransactionHeader VALUES
+('SA019','CU003','ST008','2019-11-25');
+INSERT INTO SellTransactionDetail VALUES
+('SA019','IT003',15), -- 15 Samsung Galaxy M22
+('SA019','IT013',35), -- 35 Apple Macbook Pro 12-inch
+('SA019','IT010',2); -- 2 Samsung Galaxy Z Flip
+
+-- 5. Pada tanggal 25 Desember 2020 Jojo Tirta membeli 
+--    1352 McSpicy dilayani oleh Bruno
+GO
+INSERT INTO SellTransactionHeader VALUES
+('SA020','CU012','ST002','2020-12-25');
+INSERT INTO SellTransactionDetail VALUES
+('SA020','IT014',1352); -- 1352 McSpicy
+
+-- 6. Pada tanggal 25 Desember 2020 Evanny membeli 1505 Hazelnut Milk Tea,
+--    135 Cheese Black Tea, dan 122 Oolong Milk Tea dari vendor Chatime
+--    dan belum tiba
+GO
+INSERT INTO BuyTransactionHeader VALUES
+('PH016','ST015','VE002','2020-12-25',NULL);
+INSERT INTO BuyTransactionDetail VALUES
+('PH016','IT001',1505), -- 1505 Hazelnut Milk Tea
+('PH016','IT015',135), -- 135 Cheese Black Tea
+('PH016','IT006',122); -- 122 Oolong Milk Tea
+
+-- 7. Pada tanggal 3 Januari 2020 Vincent membeli 133 Chicken Burger,
+--    128 Yakiniku 12Beef, dan 111 McSpicy15 dari vendor McDonald
+--    tiba pada tanggal 14 Januari 2020
+GO
+INSERT INTO BuyTransactionHeader VALUES
+('PH017','ST013','VE001','2020-01-03','2020-01-14');
+INSERT INTO BuyTransactionDetail VALUES
+('PH017','IT002',133), -- 133 Chicken Burger
+('PH017','IT015',135), -- 135 Cheese Black Tea
+('PH017','IT006',122); -- 122 Oolong Milk Tea
+
+-- 8. Pada tanggal 5 Desember 2020 Valentina membeli 75 Samsung Galaxy Z Flip,
+--    120 Samsung Galaxy M22 dari vendor Samsung
+--    tiba pada tanggal 27 Desember 2020
+GO
+INSERT INTO BuyTransactionHeader VALUES
+('PH018','ST001','VE013','2020-12-05','2020-12-27');
+INSERT INTO BuyTransactionDetail VALUES
+('PH018','IT010',75), -- 75 Samsung Galaxy Z Flip
+('PH018','IT003',120); -- 120 Samsung Galaxy M22
+
+-- 9. Pada tanggal 9 Januari 2020 Marissa membeli 250 Black Pepper Beef Bowl,
+--    89 Yakiniku Beef dari vendor KFC003
+--    tiba pada tanggal 10 Januari 2020
+GO
+INSERT INTO BuyTransactionHeader VALUES
+('PH019','ST005','VE003','2020-01-09','2020-01-10');
+INSERT INTO BuyTransactionDetail VALUES
+('PH019','IT004',250), -- 250 Black Pepper Beef Bowl
+('PH019','IT012',89); -- 89 Yakiniku Beef
+
+-- 10. Pada tanggal 14 Februari 2020 Jolie membeli 360 Lenovo IdeaPad Gaming
+--     dari vendor Lenovo dan tiba pada
+GO
+INSERT INTO BuyTransactionHeader VALUES
+('PH020','ST010','VE011','2020-02-14',NULL);
+INSERT INTO BuyTransactionDetail VALUES
+('PH020','IT007',360); -- 360 Lenovo IdeaPad Gaming
+
+        -- e. Select Query
+--query 1
+GO
+SELECT i.ItemName,
+	   i.ItemPrice,
+	   [Item Total] = SUM(Quantity)
+FROM Item i
+JOIN BuyTransactionDetail btd ON i.ItemID = btd.ItemID
+JOIN BuyTransactionHeader bth ON btd.BuyTransactionID = bth.BuyTransactionID
+WHERE ArrivedDate IS NULL
+GROUP BY i.ItemName, i.ItemPrice
+HAVING SUM(Quantity) > 100
+ORDER BY SUM(Quantity) DESC
+
+--query 2
+GO
+SELECT VendorName,
+	   [Domain Name] = SUBSTRING(VendorEmail,CHARINDEX('@',VendorName)+1,LEN(VendorEmail)),
+	   [Average Purchased Item] = AVG(Quantity)
+FROM Vendor v 
+JOIN BuytransactionHeader bth ON v.VendorID = bth.VendorID
+JOIN BuyTransactionDetail btd ON bth.BuyTransactionID = btd.BuyTransactionID
+WHERE VendorAddress LIKE 'Food Street' AND 
+	  SUBSTRING(VendorEmail,CHARINDEX('@',VendorName)+1,LEN(VendorEmail)) NOT LIKE 'gmail.com'
+GROUP BY VendorName, VendorEmail
+
+--query 3
+GO
+SELECT DISTINCT [Month] = DATENAME(MONTH,SellTransactionDate),
+	   [Minimum Quantity Sold] = MIN(Quantity),
+	   [Maximum Quantity Sold] = MAX(Quantity)
+FROM SellTransactionHeader sth
+JOIN SellTransactionDetail std ON sth.SellTransactionID = std.SellTransactionID
+JOIN Item i ON std.ItemID = i.ItemID
+JOIN ItemType it ON i.ItemTypeID = it.ItemTypeID
+WHERE YEAR(SellTransactionDate) = 2019 AND ItemTypeName NOT IN ('Food','Drink')
+GROUP BY DATENAME(MONTH,SellTransactionDate)
+
+--query 4
+GO
+SELECT [Staff Number] = REPLACE(s.StaffID,'ST','Staff '),
+	   s.StaffName,
+	   [Salary] = CONCAT('Rp. ',s.Salary),
+	   [Sales Count] = COUNT(sth.SellTransactionID),
+	   [Average Sales Quantity] = AVG(Quantity)
+FROM Staff s
+JOIN SellTransactionHeader sth ON s.StaffID = sth.StaffID
+JOIN SellTransactionDetail std ON sth.SellTransactionID = std.SellTransactionID
+JOIN Customer c ON sth.CustomerID = c.CustomerID
+WHERE MONTH(sth.SellTransactionDate) = 2 AND 
+	  (s.StaffGender LIKE 'Male' AND c.CustomerGender LIKE 'Female') OR 
+	  (s.StaffGender LIKE 'Female' AND c.CustomerGender LIKE 'Male')
+GROUP BY s.StaffID, s.StaffName, s.Salary
+
+--query 5
+GO
+SELECT [Customer Initial] = LEFT(CustomerName,1)+RIGHT(CustomerName,1),
+	   [TransactionDate] = CONVERT(VARCHAR,SellTransactionDate,110),
+	   Quantity
+FROM Customer c
+JOIN SellTransactionHeader sth ON c.CustomerID = sth.CustomerID
+JOIN SellTransactionDetail std ON sth.SellTransactionID = std.SellTransactionID,(
+	SELECT [Average Quantity] = AVG(Quantity)
+	FROM SellTransactionDetail
+)x
+WHERE CustomerGender LIKE 'Female' AND Quantity > x.[Average Quantity]
+
+--query 6
+GO
+SELECT [ID] = LOWER(v.VendorID),
+	   v.VendorName,
+	   [Phone Number] = STUFF(v.VendorPhone,1,1,'+62')
+FROM Vendor v
+JOIN BuyTransactionHeader bth ON v.VendorID = bth.VendorID
+JOIN BuyTransactionDetail btd ON bth.BuyTransactionID = btd.BuyTransactionID,(
+	SELECT [Minimum Purchase] = MIN(btd.Quantity)
+	FROM BuyTransactionDetail btd
+)x
+WHERE btd.Quantity > x.[Minimum Purchase] AND 
+	  CAST(RIGHT(bth.BuyTransactionID,3) AS INT) %2 !=0
+
+--query 7
+GO
+SELECT StaffName,
+	   VendorName,
+	   bth.BuyTransactionID,
+	   [Total Purchased Quantity] = SUM(btd.Quantity),
+	   [Ordered Day] = CONCAT(DATEDIFF(DAY,bth.PurchaseDate,GETDATE()),' Days ago')
+FROM Staff s
+JOIN BuyTransactionHeader bth ON s.staffID = bth.StaffID
+JOIN Vendor v ON bth.VendorID = v.VendorID
+JOIN BuyTransactionDetail btd ON bth.BuyTransactionID = btd.BuyTransactionID,(
+	SELECT [Maximum Quantity] = MAX(Quantity)
+	FROM BuyTransactionDetail
+)x
+WHERE DATEDIFF(DAY,PurchaseDate,ArrivedDate) < 7
+GROUP BY StaffName, VendorName, bth.BuyTransactionID, bth.PurchaseDate
+HAVING SUM(btd.Quantity) > MAX(Quantity)
+
+--query 8
+GO
+SELECT TOP 2 [Day] = DATENAME(WEEKDAY,sth.SellTransactionDate),
+	   [Item Sales Amount] = COUNT(std.Quantity)
+FROM Customer c
+JOIN SellTransactionHeader sth ON c.CustomerID = sth.CustomerID
+JOIN SellTransactionDetail std ON sth.SellTransactionID = std.SellTransactionID
+JOIN Item i ON std.ItemID = i.ItemID
+JOIN ItemType it ON i.ItemTypeID = it.ItemTypeID,(
+	SELECT [Average Price] = AVG(i.ItemPrice)
+	FROM Item i
+)x
+WHERE i.ItemPrice < x.[Average Price] AND it.ItemTypeName IN ('Electronic','Gadgets')
+GROUP BY sth.SellTransactionDate
+ORDER BY COUNT(std.Quantity) ASC
+
+--query 9
+GO
+CREATE VIEW [Customer Statistic by Gender] AS
+SELECT c.CustomerGender,
+	   [Maximum Sales] = MAX(std.Quantity),
+	   [Minimum Sales] = MIN(std.Quantity)
+FROM Customer c
+JOIN SellTransactionHeader sth ON c.CustomerID = sth.CustomerID
+JOIN SellTransactionDetail std ON sth.SellTransactionID = std.SellTransactionID
+WHERE (std.Quantity BETWEEN 10 AND 50) AND 
+	  (YEAR(CustomerDOB) BETWEEN 1998 AND 1999)
+GROUP BY c.CustomerGender
+
+SELECT * FROM [Customer Statistic by Gender]
+
+--query 10
+GO
+CREATE VIEW [Item Type Statistic] AS
+SELECT [Item Type] = UPPER(ItemTypeName),
+	   [Average Price] = AVG(ItemPrice),
+	   [Number of Item Variety] = COUNT(i.ItemTypeID)
+FROM ItemType it
+JOIN Item i ON it.ItemTypeID = i.ItemTypeID
+WHERE ItemTypeName LIKE 'F%' AND MinimumPurchase > 5
+GROUP BY ItemTypeName
+
+SELECT * FROM [Item Type Statistic]
